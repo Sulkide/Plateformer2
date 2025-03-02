@@ -35,7 +35,7 @@ public class EntityDataInstance //WRAPPER
     public int speed;
     public int projectileSpeed;
     public int jumpPower;
-
+    
     public EntityDataInstance(EntityData data)
     {
         entityName = data.entityName;
@@ -44,5 +44,6 @@ public class EntityDataInstance //WRAPPER
         speed = data.speed;
         projectileSpeed = data.projectileSpeed;
         jumpPower = data.jumpPower;
+        
     }
 }

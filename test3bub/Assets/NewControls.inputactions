@@ -1,5 +1,5 @@
 {
-    "name": "New Controls",
+    "name": "NewControls",
     "maps": [
         {
             "name": "CharacterControll",
@@ -9,7 +9,7 @@
                     "name": "Move",
                     "type": "Value",
                     "id": "0cdbad6a-d2b1-4b55-8e3b-986d6be18705",
-                    "expectedControlType": "Axis",
+                    "expectedControlType": "Vector2",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": true
@@ -30,7 +30,7 @@
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
-                    "initialStateCheck": true
+                    "initialStateCheck": false
                 },
                 {
                     "name": "Shoot",
@@ -46,7 +46,7 @@
                 {
                     "name": "",
                     "id": "07753b82-8d94-4db2-9f4e-d36a5be1a769",
-                    "path": "<Gamepad>/leftStick/x",
+                    "path": "<Gamepad>/leftStick",
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
@@ -72,6 +72,17 @@
                     "interactions": "",
                     "processors": "",
                     "groups": ";Gamepad",
+                    "action": "Jump",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "03ac99e6-fc6d-44d3-9c99-44e5b0e6512e",
+                    "path": "<Keyboard>/z",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
                     "action": "Jump",
                     "isComposite": false,
                     "isPartOfComposite": false
