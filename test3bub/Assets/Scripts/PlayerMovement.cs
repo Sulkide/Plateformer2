@@ -13,6 +13,7 @@ public class PlayerMovement : MonoBehaviour
 	
 	
 	public Transform pivot;
+	public bool flipAimArm;
 	public float pivotCorrection;
 	
 	public Transform projectileStartPoint;
@@ -688,9 +689,13 @@ public class PlayerMovement : MonoBehaviour
 	{
 		float angle = Mathf.Atan2(playerControls.CharacterControll.Aim.ReadValue<Vector2>().y, playerControls.CharacterControll.Aim.ReadValue<Vector2>().x) * Mathf.Rad2Deg;
 
+		
 		if (!isFacingRight)
 		{
-			angle += 180f;
+			if (flipAimArm)
+			{
+				angle += 180f;
+			}
 			projectileStartPoint.transform.rotation = Quaternion.Euler(projectileStartPoint.transform.rotation.x,projectileStartPoint.transform.rotation.y,projectileStartPoint.transform.rotation.z+180f);
 		}
 		
@@ -715,7 +720,12 @@ public class PlayerMovement : MonoBehaviour
 				{
 					if (!isFacingRight)
 					{
-						Rigidbody2D projectileRb = Instantiate(projectilePrefab, projectileStartPoint.transform.position, Quaternion.Euler(0, 0, angle-180)).GetComponent<Rigidbody2D>();
+						
+						if (flipAimArm)
+						{
+							angle -= 180f;
+						}
+						Rigidbody2D projectileRb = Instantiate(projectilePrefab, projectileStartPoint.transform.position, Quaternion.Euler(0, 0, angle)).GetComponent<Rigidbody2D>();
 						projectileRb.linearVelocity = playerControls.CharacterControll.Aim.ReadValue<Vector2>().normalized * Data.projectileSpeed;
 					}
 					else
