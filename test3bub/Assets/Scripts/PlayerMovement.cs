@@ -1,10 +1,17 @@
 using System.Collections;
+using UnityEngine.InputSystem;
 using UnityEngine;
 using UnityEngine.Serialization;
 
 public class PlayerMovement : MonoBehaviour
 {
-	private NewControls playerControls;
+	private PlayerInput playerControls;
+	
+	
+
+	
+	
+	[Range(1f, 4f)] public int currentPlayerID;
 	
 	[SerializeField] private Animator playerAnimator;
 	
@@ -157,12 +164,13 @@ public class PlayerMovement : MonoBehaviour
     private void Awake()
 	{
 		RB = GetComponent<Rigidbody2D>();
-		playerControls = new NewControls();
+		playerControls = GetComponent<PlayerInput>();
+		 
 	}
 
 	private void OnEnable()
 	{
-		playerControls.Enable();
+		//playerControls.Enable();
 	}
 
 	private void Start()
@@ -173,10 +181,21 @@ public class PlayerMovement : MonoBehaviour
 		RemovePlayerControl(false);
 		cacPoint.SetActive(false);
 		dashPoint.SetActive(false);
+		
 	}
 
+	private bool IsCorrectGamepad()
+	{
+		int assignedGamepadID = GameManager.instance.GetPlayerGamepadID(currentPlayerID);
+		Gamepad currentGamepad = playerControls.devices[0] as Gamepad;
+
+		return currentGamepad != null && currentGamepad.deviceId == assignedGamepadID;
+	}
+	
 	private void Update()
 	{
+		if (!IsCorrectGamepad()) return;
+		
         #region TIMERS
         lastOnGroundTime -= Time.deltaTime;
 		lastOnWallTime -= Time.deltaTime;
@@ -189,10 +208,9 @@ public class PlayerMovement : MonoBehaviour
 
 		#region INPUT HANDLER
 
-		moveInput.x = playerControls.CharacterControll.Move.ReadValue<Vector2>().x;
-		moveInput.y = playerControls.CharacterControll.Move.ReadValue<Vector2>().y;
 
-		
+		moveInput.x = playerControls.actions["Move"].ReadValue<Vector2>().x;
+		moveInput.y = playerControls.actions["Move"].ReadValue<Vector2>().y;
 		
 		if (moveInput.x != 0)
 			CheckDirectionToFace(moveInput.x > 0);
@@ -291,12 +309,13 @@ public class PlayerMovement : MonoBehaviour
 		
 		
 		
-		if(Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.C) || Input.GetKeyDown(KeyCode.J) || playerControls.CharacterControll.Jump.WasPressedThisFrame())
-        {
+		if(Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.C) || Input.GetKeyDown(KeyCode.J) || playerControls.actions["Jump"].WasPressedThisFrame())
+		{
+			Debug.Log("testt");
 			OnJumpInput();
         }
 
-		if (Input.GetKeyUp(KeyCode.Space) || Input.GetKeyUp(KeyCode.C) || Input.GetKeyUp(KeyCode.J) || playerControls.CharacterControll.Jump.WasReleasedThisFrame())
+		if (Input.GetKeyUp(KeyCode.Space) || Input.GetKeyUp(KeyCode.C) || Input.GetKeyUp(KeyCode.J) || playerControls.actions["Jump"].WasReleasedThisFrame())
 		{
 			OnJumpUpInput();
 		}
@@ -520,6 +539,8 @@ public class PlayerMovement : MonoBehaviour
 	
     private void FixedUpdate()
 	{
+		if (!IsCorrectGamepad()) return;
+		
 		Aim();
 		
 		if (currentRecoverTime > 0)
@@ -595,8 +616,6 @@ public class PlayerMovement : MonoBehaviour
 	{
 		
 		targetSpeed = Mathf.Lerp(RB.linearVelocity.x, targetSpeed, lerpAmount);
-		
-		
 		
 		
 		#region Calculate AccelRate
@@ -687,7 +706,7 @@ public class PlayerMovement : MonoBehaviour
 
 	private void Aim()
 	{
-		float angle = Mathf.Atan2(playerControls.CharacterControll.Aim.ReadValue<Vector2>().y, playerControls.CharacterControll.Aim.ReadValue<Vector2>().x) * Mathf.Rad2Deg;
+		float angle = Mathf.Atan2(playerControls.actions["Aim"].ReadValue<Vector2>().y, playerControls.actions["Aim"].ReadValue<Vector2>().x) * Mathf.Rad2Deg;
 
 		
 		if (!isFacingRight)
@@ -701,7 +720,7 @@ public class PlayerMovement : MonoBehaviour
 		
 		pivot.rotation = Quaternion.Euler(0f, 0f, angle + pivotCorrection);
 
-		if (playerControls.CharacterControll.Aim.ReadValue<Vector2>().normalized == Vector2.zero)
+		if (playerControls.actions["Aim"].ReadValue<Vector2>().normalized == Vector2.zero)
 		{
 			armOriginal.SetActive(true);
 			armAim.SetActive(false);
@@ -710,7 +729,7 @@ public class PlayerMovement : MonoBehaviour
 		else
 		{
 			
-			if (playerControls.CharacterControll.Shoot.ReadValue<float>() > 0)
+			if (playerControls.actions["Shoot"].ReadValue<float>() > 0)
 			{
 				if (currentCoolDown > 0)
 				{
@@ -726,12 +745,12 @@ public class PlayerMovement : MonoBehaviour
 							angle -= 180f;
 						}
 						Rigidbody2D projectileRb = Instantiate(projectilePrefab, projectileStartPoint.transform.position, Quaternion.Euler(0, 0, angle)).GetComponent<Rigidbody2D>();
-						projectileRb.linearVelocity = playerControls.CharacterControll.Aim.ReadValue<Vector2>().normalized * Data.projectileSpeed;
+						projectileRb.linearVelocity = playerControls.actions["Aim"].ReadValue<Vector2>().normalized * Data.projectileSpeed;
 					}
 					else
 					{
 						Rigidbody2D projectileRb = Instantiate(projectilePrefab, projectileStartPoint.transform.position, Quaternion.Euler(0, 0, angle)).GetComponent<Rigidbody2D>();
-						projectileRb.linearVelocity = playerControls.CharacterControll.Aim.ReadValue<Vector2>().normalized * Data.projectileSpeed;
+						projectileRb.linearVelocity = playerControls.actions["Aim"].ReadValue<Vector2>().normalized * Data.projectileSpeed;
 					}
 					
 					
@@ -759,7 +778,7 @@ public class PlayerMovement : MonoBehaviour
 
 	private void CAC()
 	{
-		if (playerControls.CharacterControll.Shoot.ReadValue<float>() > 0)
+		if (playerControls.actions["Shoot"].ReadValue<float>() > 0)
 		{
 			if (Mathf.Abs(moveInput.x) == 0)
 			{
@@ -837,11 +856,11 @@ public class PlayerMovement : MonoBehaviour
 	{
 		if (value == true)
 		{
-			playerControls.Disable();
+			//playerControls.Disable();
 		}
 		else
 		{
-			playerControls.Enable();
+			//playerControls.Enable();
 		}
 		
 	}
