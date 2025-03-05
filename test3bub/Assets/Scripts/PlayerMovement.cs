@@ -6,10 +6,7 @@ using UnityEngine.Serialization;
 public class PlayerMovement : MonoBehaviour
 {
 	private PlayerInput playerControls;
-	
-	
 
-	
 	
 	[Range(1f, 4f)] public int currentPlayerID;
 	
@@ -183,18 +180,8 @@ public class PlayerMovement : MonoBehaviour
 		dashPoint.SetActive(false);
 		
 	}
-
-	private bool IsCorrectGamepad()
-	{
-		int assignedGamepadID = GameManager.instance.GetPlayerGamepadID(currentPlayerID);
-		Gamepad currentGamepad = playerControls.devices[0] as Gamepad;
-
-		return currentGamepad != null && currentGamepad.deviceId == assignedGamepadID;
-	}
-	
 	private void Update()
 	{
-		if (!IsCorrectGamepad()) return;
 		
         #region TIMERS
         lastOnGroundTime -= Time.deltaTime;
@@ -539,7 +526,6 @@ public class PlayerMovement : MonoBehaviour
 	
     private void FixedUpdate()
 	{
-		if (!IsCorrectGamepad()) return;
 		
 		Aim();
 		

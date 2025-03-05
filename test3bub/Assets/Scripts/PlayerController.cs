@@ -66,13 +66,6 @@ public class PlayerController : Entity
         }
     }
 
-    
-    //test
-    
-    
-    
-    //test
-
     [SerializeField] private GameObject projectilePrefab;
 
     private Vector2 shootAngle;

@@ -6,55 +6,34 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager instance;
 
-    public Dictionary<int, int> playerGamepadMap = new Dictionary<int, int>(); // Associe un joueur à un ID de gamepad
+    public PlayerInputManager playerInputManager;
+    public List<GameObject> playerPrefabs; 
+    private int nextPrefabIndex = 0; 
 
     void Awake()
     {
-        instance = this;
-        InputSystem.onDeviceChange += OnDeviceChange; // Écoute les changements de périphériques
+        if (instance == null)
+            instance = this;
+        else
+            Destroy(gameObject);
     }
 
     void Start()
     {
-        AssignGamepads();
+        if (playerInputManager == null)
+            playerInputManager = GetComponent<PlayerInputManager>();
+
+        playerInputManager.onPlayerJoined += OnPlayerJoined;
     }
 
-    void AssignGamepads()
+    void OnPlayerJoined(PlayerInput player)
     {
-        playerGamepadMap.Clear();
-        int playerIndex = 1;
-
-        foreach (var device in InputSystem.devices)
+        
+        if (playerPrefabs.Count > 0)
         {
-            if (device is Gamepad gamepad && playerIndex <= 4) // Max 4 joueurs
-            {
-                playerGamepadMap[playerIndex] = gamepad.deviceId;
-                Debug.Log($"Joueur {playerIndex} assigné à la manette {gamepad.deviceId}");
-                playerIndex++;
-            }
+            playerInputManager.playerPrefab = playerPrefabs[nextPrefabIndex];
+            
+            nextPrefabIndex = (nextPrefabIndex + 1) % playerPrefabs.Count;
         }
-    }
-
-    private void OnDeviceChange(InputDevice device, InputDeviceChange change)
-    {
-        if (device is Gamepad)
-        {
-            switch (change)
-            {
-                case InputDeviceChange.Added:
-                    Debug.Log($"Nouvelle manette connectée : {device.name}");
-                    AssignGamepads(); // Réattribuer les manettes
-                    break;
-                case InputDeviceChange.Removed:
-                    Debug.Log($"Manette déconnectée : {device.name}");
-                    AssignGamepads(); // Mettre à jour les assignations
-                    break;
-            }
-        }
-    }
-
-    public int GetPlayerGamepadID(int playerIndex)
-    {
-        return playerGamepadMap.ContainsKey(playerIndex) ? playerGamepadMap[playerIndex] : -1;
     }
 }
