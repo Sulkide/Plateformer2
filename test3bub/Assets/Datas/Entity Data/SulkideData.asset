@@ -16,13 +16,13 @@ MonoBehaviour:
   hasHealthBonus: 1
   recoverTime: 2
   cooldownCAC: 0.2
-  projectileSpeed: 15
-  cooldownProjectile: 5
+  projectileSpeed: 20
+  cooldownProjectile: 0.8
   gravityStrength: -77.77777
   gravityScale: 7.0707064
   fallGravityMult: 1.5
   maxFallSpeed: 25
-  fastFallGravityMult: 2
+  fastFallGravityMult: 1
   maxFastFallSpeed: 30
   runMaxSpeed: 11
   runAcceleration: 2.5

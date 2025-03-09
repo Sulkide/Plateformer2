@@ -71,6 +71,15 @@ public partial class @NewControls: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Dpad"",
+                    ""type"": ""Value"",
+                    ""id"": ""743c1e5a-fb55-4c99-b806-25ffadaec3e4"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
                 }
             ],
             ""bindings"": [
@@ -139,6 +148,17 @@ public partial class @NewControls: IInputActionCollection2, IDisposable
                     ""action"": ""Start"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""e42f8ebe-1d68-4267-9a5b-3819ecaff103"",
+                    ""path"": ""<Gamepad>/dpad"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Gamepad"",
+                    ""action"": ""Dpad"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -164,6 +184,7 @@ public partial class @NewControls: IInputActionCollection2, IDisposable
         m_CharacterControll_Jump = m_CharacterControll.FindAction("Jump", throwIfNotFound: true);
         m_CharacterControll_Shoot = m_CharacterControll.FindAction("Shoot", throwIfNotFound: true);
         m_CharacterControll_Start = m_CharacterControll.FindAction("Start", throwIfNotFound: true);
+        m_CharacterControll_Dpad = m_CharacterControll.FindAction("Dpad", throwIfNotFound: true);
     }
 
     ~@NewControls()
@@ -235,6 +256,7 @@ public partial class @NewControls: IInputActionCollection2, IDisposable
     private readonly InputAction m_CharacterControll_Jump;
     private readonly InputAction m_CharacterControll_Shoot;
     private readonly InputAction m_CharacterControll_Start;
+    private readonly InputAction m_CharacterControll_Dpad;
     public struct CharacterControllActions
     {
         private @NewControls m_Wrapper;
@@ -244,6 +266,7 @@ public partial class @NewControls: IInputActionCollection2, IDisposable
         public InputAction @Jump => m_Wrapper.m_CharacterControll_Jump;
         public InputAction @Shoot => m_Wrapper.m_CharacterControll_Shoot;
         public InputAction @Start => m_Wrapper.m_CharacterControll_Start;
+        public InputAction @Dpad => m_Wrapper.m_CharacterControll_Dpad;
         public InputActionMap Get() { return m_Wrapper.m_CharacterControll; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -268,6 +291,9 @@ public partial class @NewControls: IInputActionCollection2, IDisposable
             @Start.started += instance.OnStart;
             @Start.performed += instance.OnStart;
             @Start.canceled += instance.OnStart;
+            @Dpad.started += instance.OnDpad;
+            @Dpad.performed += instance.OnDpad;
+            @Dpad.canceled += instance.OnDpad;
         }
 
         private void UnregisterCallbacks(ICharacterControllActions instance)
@@ -287,6 +313,9 @@ public partial class @NewControls: IInputActionCollection2, IDisposable
             @Start.started -= instance.OnStart;
             @Start.performed -= instance.OnStart;
             @Start.canceled -= instance.OnStart;
+            @Dpad.started -= instance.OnDpad;
+            @Dpad.performed -= instance.OnDpad;
+            @Dpad.canceled -= instance.OnDpad;
         }
 
         public void RemoveCallbacks(ICharacterControllActions instance)
@@ -320,5 +349,6 @@ public partial class @NewControls: IInputActionCollection2, IDisposable
         void OnJump(InputAction.CallbackContext context);
         void OnShoot(InputAction.CallbackContext context);
         void OnStart(InputAction.CallbackContext context);
+        void OnDpad(InputAction.CallbackContext context);
     }
 }

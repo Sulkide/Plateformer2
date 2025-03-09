@@ -12,12 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 191cdff3a3dab0441947876f5d7ca6a2, type: 3}
   m_Name: SulanaData
   m_EditorClassIdentifier: 
-  playerName: Sulkide
+  playerName: Sulana
   hasHealthBonus: 1
   recoverTime: 2
   cooldownCAC: 0.2
   projectileSpeed: 15
-  cooldownProjectile: 5
+  cooldownProjectile: 0.3
   gravityStrength: -77.77777
   gravityScale: 7.0707064
   fallGravityMult: 1.5

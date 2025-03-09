@@ -1,4 +1,6 @@
+using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine.InputSystem;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -6,15 +8,16 @@ using UnityEngine.Serialization;
 public class PlayerMovement : MonoBehaviour
 {
 	private PlayerInput playerControls;
-
 	
 	[Range(1f, 4f)] public int currentPlayerID;
 	
 	[SerializeField] private Animator playerAnimator;
 	
-	public string[] allAnimations = new[] { "isRunning", "isJumping", "isFalling", "isWalking", "isSliding" };
 	
-	
+	public GameObject[] characters;
+	private int currentIndex = -1;
+	private Vector2 lastPosition;
+	public GameObject [] characterReference;
 	
 	public Transform pivot;
 	public bool flipAimArm;
@@ -37,63 +40,7 @@ public class PlayerMovement : MonoBehaviour
 	[SerializeField] private GameObject projectilePrefab;
 	
 	private float currentCoolDown = 0;
-	enum PlayerState
-	{
-		Idle,
-		Walk,
-		Run,
-		Jump,
-		Fall,
-		Slide,
-		DamageUp,
-	}
-
-	private PlayerState currentState = PlayerState.Idle;
-
-	private void ChangeState(PlayerState newState)
-	{
-		currentState = newState;
-		switch (currentState)
-		{
-			case PlayerState.Idle : 
-				ResetAllAnimatorExept("");
-				break;
-			case PlayerState.Walk :
-				playerAnimator.SetBool("isWalking", true);
-				ResetAllAnimatorExept("isWalking");
-				break;
-			case PlayerState.Run :
-				playerAnimator.SetBool("isRunning", true);
-				ResetAllAnimatorExept("isRunning");
-				break;
-			case PlayerState.Jump :
-				playerAnimator.SetBool("isJumping", true);
-				ResetAllAnimatorExept("isJumping");
-				break;
-			case PlayerState.Fall :
-				playerAnimator.SetBool("isFalling", true);
-				ResetAllAnimatorExept("isFalling");
-				break;
-			case PlayerState.Slide :
-				playerAnimator.SetBool("isSliding", true);
-				ResetAllAnimatorExept("isSliding");
-				break;
-			case PlayerState.DamageUp :
-				playerAnimator.SetBool("isDamageUp", true);
-				ResetAllAnimatorExept("isDamageUp");
-				break;
-		}
-	}
-    
-    
-	private void ResetAllAnimatorExept(string animationName)
-	{
-		foreach (var animName in allAnimations)
-		{
-			if (animName == animationName) continue;
-			playerAnimator.SetBool(animName, false);
-		}
-	}
+	
 
 	public PlayerData Data;
 
@@ -133,6 +80,7 @@ public class PlayerMovement : MonoBehaviour
 
 	private float targetSpeed;
 	
+	
 	#endregion
 
 	#region INPUT PARAMETERS
@@ -161,8 +109,7 @@ public class PlayerMovement : MonoBehaviour
     private void Awake()
 	{
 		RB = GetComponent<Rigidbody2D>();
-		playerControls = GetComponent<PlayerInput>();
-		 
+		playerControls = GetComponentInParent<PlayerInput>();
 	}
 
 	private void OnEnable()
@@ -179,9 +126,13 @@ public class PlayerMovement : MonoBehaviour
 		cacPoint.SetActive(false);
 		dashPoint.SetActive(false);
 		
+
+		
 	}
 	private void Update()
 	{
+
+		CheckCharacter();
 		
         #region TIMERS
         lastOnGroundTime -= Time.deltaTime;
@@ -194,7 +145,7 @@ public class PlayerMovement : MonoBehaviour
 		#endregion
 
 		#region INPUT HANDLER
-
+		
 
 		moveInput.x = playerControls.actions["Move"].ReadValue<Vector2>().x;
 		moveInput.y = playerControls.actions["Move"].ReadValue<Vector2>().y;
@@ -298,7 +249,6 @@ public class PlayerMovement : MonoBehaviour
 		
 		if(Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.C) || Input.GetKeyDown(KeyCode.J) || playerControls.actions["Jump"].WasPressedThisFrame())
 		{
-			Debug.Log("testt");
 			OnJumpInput();
         }
 
@@ -311,7 +261,14 @@ public class PlayerMovement : MonoBehaviour
 		{
 			OnDashInput();
 		}
+
+		if (playerControls.actions["Dpad"].WasPressedThisFrame() && (Mathf.Abs(moveInput.x) == 0 && (RB.linearVelocity.y == 0)))
+		{
+			ChangeCharacter(playerControls.actions["Dpad"].ReadValue<Vector2>());
+		}
 		#endregion
+		
+		
 
 		targetSpeed = moveInput.x * Data.runMaxSpeed;
 		
@@ -692,8 +649,14 @@ public class PlayerMovement : MonoBehaviour
 
 	private void Aim()
 	{
+		Debug.Log(currentCoolDown);
+		
 		float angle = Mathf.Atan2(playerControls.actions["Aim"].ReadValue<Vector2>().y, playerControls.actions["Aim"].ReadValue<Vector2>().x) * Mathf.Rad2Deg;
 
+		if (currentCoolDown > 0)
+		{
+			currentCoolDown -= Time.deltaTime;
+		}
 		
 		if (!isFacingRight)
 		{
@@ -719,7 +682,7 @@ public class PlayerMovement : MonoBehaviour
 			{
 				if (currentCoolDown > 0)
 				{
-					currentCoolDown -= Time.deltaTime;
+					
 				}
 				else
 				{
@@ -744,10 +707,6 @@ public class PlayerMovement : MonoBehaviour
 					
 				}
 			}
-			else
-			{
-				currentCoolDown = 0;
-			}
 
 			if (currentCoolDown > 0)
 			{
@@ -759,6 +718,8 @@ public class PlayerMovement : MonoBehaviour
 				armOriginal.SetActive(false);
 				armAim.SetActive(true);
 			}
+			
+			
 		}
 	}
 
@@ -850,6 +811,119 @@ public class PlayerMovement : MonoBehaviour
 		}
 		
 	}
+	
+	
+	public void ChangeCharacter(Vector2 direction)
+	{
+		int indexToActivate = -1;
+    
+		if (direction == Vector2.up) // Player0
+		{
+			if (GameManager.instance.isDarckoxPresent)
+			{
+				Debug.Log("Darckox");
+				return;
+			}
+			indexToActivate = 0;
+		}
+		
+		if (direction == Vector2.down) // Player1
+		{
+			if (GameManager.instance.isSlowPresent)
+			{
+				Debug.Log("Slow");
+				return;
+			}
+			indexToActivate = 1;
+		}
+		
+		if (direction == Vector2.right)// Player2
+		{
+			if (GameManager.instance.isSulkidePresent)
+			{
+				Debug.Log("Sulkide");
+				return;
+			}
+			indexToActivate = 2;
+		}
+		
+		if (direction == Vector2.left) // Player3
+		{
+			if (GameManager.instance.isSulanaPresent)
+			{
+				Debug.Log("Sulana");
+				return;
+			}
+			indexToActivate = 3;
+		}
+    
+		if (indexToActivate < 0 || indexToActivate >= characters.Length)
+			return;
+		
+    
+		// Récupère la position de l'objet actuellement actif
+		Vector3 lastActivePosition = transform.position; // Valeur par défaut
+		for (int i = 0; i < characters.Length; i++)
+		{
+			if (characters[i].activeSelf)
+			{
+				lastActivePosition = characters[i].transform.position;
+				break;
+			}
+		}
+    
+		// Active uniquement l'objet ciblé et désactive les autres,
+		// et positionne le nouvel objet à la position du dernier objet actif
+		for (int i = 0; i < characters.Length; i++)
+		{
+			bool shouldActivate = (i == indexToActivate);
+			characters[i].SetActive(shouldActivate);
+			if (shouldActivate)
+			{
+				characters[i].transform.position = lastActivePosition;
+			}
+		}
+	}
+
+	private void CheckCharacter()
+	{
+		if (characters[0].activeInHierarchy)
+		{
+			GameManager.instance.isDarckoxPresent = true;
+		}
+		else
+		{
+			//GameManager.instance.isDarckoxPresent = false;
+		}
+
+		if (characters[1].activeInHierarchy)
+		{
+			GameManager.instance.isSlowPresent = true;
+		}
+		else
+		{
+			//GameManager.instance.isSlowPresent = false;
+		}
+		
+		if (characters[2].activeInHierarchy)
+		{
+			GameManager.instance.isSulkidePresent = true;
+		}
+		else
+		{
+			//GameManager.instance.isSulkidePresent = false;
+		}
+		
+		if (characters[3].activeInHierarchy)
+		{
+			GameManager.instance.isSulanaPresent = true;
+		}
+		else
+		{
+			//GameManager.instance.isSulanaPresent = false;
+		}
+	}
+	
 	
 	#region DASH METHODS
 	

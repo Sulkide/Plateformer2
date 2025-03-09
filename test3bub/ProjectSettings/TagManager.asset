@@ -15,9 +15,9 @@ TagManager:
   - Ground
   - Enemy
   - CAC
-  - 
-  - 
-  - 
+  - Projectile
+  - ProjectileCollision
+  - Player
   - 
   - 
   - 
